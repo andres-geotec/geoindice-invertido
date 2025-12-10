@@ -2,53 +2,55 @@ import requests
 from django.core.management.base import BaseCommand
 
 from .inverted_index import InvertedIndex
-from .utils import GEONODE_URL, data_docs, verifyFolder, joinPath, writeJSON
+from .utils import GEONODE_URL, data_docs, writeJSON
 
 class Command(BaseCommand):
   help = "Descarga resources de GeoNode y los guarda en un archivo JSON"
 
   def handle(self, *args, **options):
-    data = self.requestUrl(GEONODE_URL)
-    docs = self.cerateDocs(data)
-    self.createIndex(docs)
+    resources = self.getResources()
+    
+    docs = self.cerateDocsFiltered(resources)
+    self.saveJSON(docs, 'docs.json')
 
-  def requestUrl(self, url):
-    self.stdout.write("Consultando GeoNode...")
-    resp = requests.get(url)
-    resp.raise_for_status()
-    return resp.json()
+    invertedIndex = InvertedIndex()
+    invertedIndex.tokenize(self.createDocsJoin(docs))
+    # invertedIndex.tokens = tokenize(self.createDocsJoin(docs))
+    self.saveJSON(invertedIndex.tokens, 'tokens.json')
+    self.saveJSON(invertedIndex.build_index(), 'index.json')
 
-  def cerateDocs(self, data):
-    # acomodando en forma de documentos para el índice invertido
-    docs = {
-      resource['pk']: {
-        key: resource[key]
-        for key in resource
-        if key in data_docs and resource[key] != ""
-      } for resource in data['resources']
-    }  
-
-    # archivo para guardar los datos
-    output_path = joinPath("data", "docs.json")
-    # escritura del archivo
-    writeJSON(output_path, docs)
-    self.stdout.write(self.style.SUCCESS(f"Datos guardados en {output_path}"))
-    return docs
-  
-  def createIndex(self, docs):
-    self.stdout.write("Creando index inverso...")
+  def createDocsJoin(self, docs):
     docs_join = {
       doc_id: ' '.join(
         docs[doc_id][key]
         for key in docs[doc_id]
       ) for doc_id in docs
     }
-    invertedIndex = InvertedIndex(docs_join)
-    index = invertedIndex.build()
+    return docs_join
     
-    # archivo para guardar los datos
-    output_path = joinPath("data", "index.json")
-    # escritura del archivo
-    writeJSON(output_path, index)
-    self.stdout.write(self.style.SUCCESS(f"Datos guardados en {output_path}"))
-    return index
+  def saveJSON(self, docs, name_file):
+    writeJSON(docs, name_file)
+    self.stdout.write(self.style.SUCCESS(f"{name_file} creado correctamente."))
+    
+  def cerateDocsFiltered(self, resources):
+    # acomodando en forma de documentos para el índice invertido
+    return {
+      resource['pk']: {
+        key: resource[key]
+        for key in resource
+        if key in data_docs and resource[key] != ""
+      } for resource in resources
+    }
+
+  def getResources(self):
+    self.stdout.write("Consultando GeoNode...")
+    resp = requests.get(GEONODE_URL)
+    resp.raise_for_status()
+    
+    data = resp.json()
+    if 'resources' in data:
+      self.stdout.write(self.style.SUCCESS(f"Recursos consultados :)"))
+      return data['resources']
+    else:
+      self.stdout.write(self.style.ERROR("no se encontraron los recursos :("))
+      raise ValueError('Ocurrió un error')
