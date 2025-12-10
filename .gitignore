@@ -17,6 +17,7 @@ local_settings.py
 media
 db.sqlite3
 /static # if using collectstatic to a specific directory
+data/
 
 # IDE specific files
 .idea/
