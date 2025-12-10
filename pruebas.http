@@ -1,0 +1,14 @@
+### ya en localhost los endpoints para el modelo request
+@base_url=http://127.0.0.1:8000
+
+### 1.- Lista sin query
+GET {{base_url}}/api/resources/
+
+### 1.- Lista con query
+@query="Accidentes de tránsito"
+GET {{base_url}}/api/resources/?q={{query}}
+
+### 1.- Lista con query y top k
+@query2="Accidentes vehiculares en tlaxcala"
+@top_k=3
+GET {{base_url}}/api/resources/?q={{query2}}&k={{top_k}}
