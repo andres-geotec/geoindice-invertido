@@ -33,10 +33,7 @@ class InvertedIndex:
     """
     index = defaultdict(lambda: defaultdict(list))
 
-    # for doc_id, text in docs.items():
-    #     tokens = tokenize(text)
     for doc_id, tokens in self.tokenize().items():
-        # tokens = tokenize(text)
         for pos, token in enumerate(tokens):
             index[token][doc_id].append(pos)
     return index
