@@ -44,13 +44,29 @@ class Command(BaseCommand):
 
   def getResources(self):
     self.stdout.write("Consultando GeoNode...")
-    resp = requests.get(GEONODE_URL)
-    resp.raise_for_status()
+
+    exist_page = True
+    page = 1
+    resources = []
+    while exist_page:
+      # print(page)
+      resp = requests.get(GEONODE_URL, params={
+        'filter{category.identifier}':'movilidad',
+        'filter{group.name}': 'dgpdi',
+        'page': page
+      })
+      resp.raise_for_status()
     
-    data = resp.json()
-    if 'resources' in data:
-      self.stdout.write(self.style.SUCCESS(f"Recursos consultados :)"))
-      return data['resources']
+      data = resp.json()
+      if 'resources' in data:
+        resources.extend(data['resources'])
+        self.stdout.write(self.style.SUCCESS(f"{len(resources)} Recursos consultados :)"))
+
+      exist_page = data['links']['next'] is not None
+      page += 1
+    
+    if len(resources) > 0:
+      return resources
     else:
       self.stdout.write(self.style.ERROR("no se encontraron los recursos :("))
       raise ValueError('Ocurrió un error')

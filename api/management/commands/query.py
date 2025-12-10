@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from .inverted_index import InvertedIndex, tokenize, contarTokens
 from .utils import readJSON
 
-query = 'información de ciudades en México'
+query = 'Accidentes vehiculares en tlaxcala'
 
 class Command(BaseCommand):
   help = "Descarga resources de GeoNode y los guarda en un archivo JSON"
@@ -21,18 +21,24 @@ class Command(BaseCommand):
     top_k = 3
     print(f'Buscando ({top_k}): "{query}"')
     q_score = self.score_query(query)
-    print(q_score)
+    # print(q_score)
+    scores = sorted(q_score.items(), key=lambda x: x[1], reverse=True)
+    # i = 1
+
+    docs = self.loadJSON('docs.json')
+    for id, score in scores[:top_k]:
+      print(f'[{score}] {docs[id]}')
 
   def score_query(self, query):
     tfs = self.invertedIndex.get_tfs()
     idf = self.invertedIndex.get_idf()
 
     q_tokens = tokenize(query)
-    print(q_tokens)
+    # print(q_tokens)
     q_tf = contarTokens(q_tokens)
-    print(q_tf)
+    # print(q_tf)
     q_vec = {t: (q_tf[t]/len(q_tokens)) * idf.get(t, 0) for t in q_tf}
-    print(q_vec)
+    # print(q_vec)
     scores = {}
     for doc in self.invertedIndex.tokens:
         # doc vector
