@@ -3,7 +3,7 @@ import math
 
 from django.core.management.base import BaseCommand
 
-from .inverted_index import InvertedIndex, tokenize, contarTokens
+from ...classes.inverted_index import InvertedIndex, tokenize, contarTokens
 from .utils import readJSON
 
 query = 'Accidentes vehiculares en tlaxcala'
@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     docs = self.loadJSON('docs.json')
     for id, score in scores[:top_k]:
-      print(f'[{score}] {docs[id]}')
+      print(f'\n[{score}] {docs[id]}')
 
   def score_query(self, query):
     tfs = self.invertedIndex.get_tfs()

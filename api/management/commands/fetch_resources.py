@@ -1,7 +1,7 @@
 import requests
 from django.core.management.base import BaseCommand
 
-from .inverted_index import InvertedIndex
+from ...classes.inverted_index import InvertedIndex
 from .utils import GEONODE_URL, data_docs, writeJSON
 
 class Command(BaseCommand):

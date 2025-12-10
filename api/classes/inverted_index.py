@@ -44,6 +44,31 @@ class InvertedIndex:
         df = len(docs)
         idf[term] = math.log((N + 1) / (df + 1)) + 1
     return idf
+  
+  def score_query(self, query):
+    tfs = self.get_tfs()
+    idf = self.get_idf()
+
+    q_tokens = tokenize(query)
+    # print(q_tokens)
+    q_tf = contarTokens(q_tokens)
+    # print(q_tf)
+    q_vec = {t: (q_tf[t]/len(q_tokens)) * idf.get(t, 0) for t in q_tf}
+    # print(q_vec)
+    scores = {}
+    for doc in self.tokens:
+        # doc vector
+        doc_vec = {t: tfs[doc].get(t, 0) * idf.get(t, 0) for t in q_vec}
+        num = sum(q_vec[t] * doc_vec.get(t, 0) for t in q_vec)
+        denom = math.sqrt(
+            sum(
+                v*v for v in q_vec.values())
+            ) * math.sqrt(sum(
+                v*v for v in doc_vec.values()
+            )
+        )
+        scores[doc] = num / denom if denom else 0.0
+    return scores
 
 
 stopwords = {
