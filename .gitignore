@@ -1,0 +1,27 @@
+# Python
+*.pyc
+__pycache__
+*~$
+*.bak
+*.log
+.Python
+env/
+venv/
+ENV/
+venv.bak/
+env.bak/
+
+# Django
+*.pot
+local_settings.py
+media
+db.sqlite3
+/static # if using collectstatic to a specific directory
+
+# IDE specific files
+.idea/
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
